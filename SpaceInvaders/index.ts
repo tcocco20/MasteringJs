@@ -6,10 +6,10 @@ let currentShooterIndex: number = 202;
 let invadersId: number;
 let isGoingRight: boolean = true;
 let direction: number = 1;
+let points: number = 0;
 
 for (let i = 0; i < width * width; i++) {
   const square = document.createElement("div");
-  square.id = i.toString();
   if (grid) grid.appendChild(square);
 }
 
@@ -96,3 +96,45 @@ const moveInvaders = (): void => {
 };
 
 invadersId = setInterval(moveInvaders, 500);
+
+function shoot(event: KeyboardEvent): void {
+  let laserId: number;
+  let currentLaserIndex: number = currentShooterIndex;
+
+  function moveLaser(): void {
+    squares[currentLaserIndex].classList.remove("laser");
+    currentLaserIndex -= width;
+    squares[currentLaserIndex].classList.add("laser");
+    if (currentLaserIndex < width) {
+      clearInterval(laserId);
+      setTimeout(
+        () => squares[currentLaserIndex].classList.remove("laser"),
+        100
+      );
+    }
+    if (squares[currentLaserIndex].classList.contains("invader")) {
+      squares[currentLaserIndex].classList.remove("laser");
+      squares[currentLaserIndex].classList.remove("invader");
+      squares[currentLaserIndex].classList.add("boom");
+
+      setTimeout(
+        () => squares[currentLaserIndex].classList.remove("boom"),
+        250
+      );
+      clearInterval(laserId);
+
+      const alienRemoved: number = alienInvaders.indexOf(currentLaserIndex);
+      aliensRemoved.push(alienRemoved);
+      points++;
+      results!.innerText = `Score: ${aliensRemoved.length}`;
+    }
+  }
+
+  if (event.key === " ") {
+    laserId = setInterval(moveLaser, 100);
+  }
+}
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === " ") shoot(e);
+});

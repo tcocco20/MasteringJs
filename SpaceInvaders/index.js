@@ -6,9 +6,9 @@ var currentShooterIndex = 202;
 var invadersId;
 var isGoingRight = true;
 var direction = 1;
+var points = 0;
 for (var i = 0; i < width * width; i++) {
     var square = document.createElement("div");
-    square.id = i.toString();
     if (grid)
         grid.appendChild(square);
 }
@@ -71,5 +71,44 @@ var moveInvaders = function () {
         alienInvaders[i] += direction;
     }
     draw();
+    if (squares[currentShooterIndex].classList.contains("invader")) {
+        results.innerText = "Game Over";
+        clearInterval(invadersId);
+    }
+    if (alienInvaders.length === aliensRemoved.length) {
+        results.innerText = "You Win";
+        clearInterval(invadersId);
+    }
 };
 invadersId = setInterval(moveInvaders, 500);
+function shoot(event) {
+    var laserId;
+    var currentLaserIndex = currentShooterIndex;
+    function moveLaser() {
+        squares[currentLaserIndex].classList.remove("laser");
+        currentLaserIndex -= width;
+        squares[currentLaserIndex].classList.add("laser");
+        if (currentLaserIndex < width) {
+            clearInterval(laserId);
+            setTimeout(function () { return squares[currentLaserIndex].classList.remove("laser"); }, 100);
+        }
+        if (squares[currentLaserIndex].classList.contains("invader")) {
+            squares[currentLaserIndex].classList.remove("laser");
+            squares[currentLaserIndex].classList.remove("invader");
+            squares[currentLaserIndex].classList.add("boom");
+            setTimeout(function () { return squares[currentLaserIndex].classList.remove("boom"); }, 250);
+            clearInterval(laserId);
+            var alienRemoved = alienInvaders.indexOf(currentLaserIndex);
+            aliensRemoved.push(alienRemoved);
+            points++;
+            results.innerText = "Score: ".concat(aliensRemoved.length);
+        }
+    }
+    if (event.key === " ") {
+        laserId = setInterval(moveLaser, 100);
+    }
+}
+document.addEventListener("keydown", function (e) {
+    if (e.key === " ")
+        shoot(e);
+});
